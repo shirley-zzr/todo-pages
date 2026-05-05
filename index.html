@@ -2,8 +2,15 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff8fab" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="待办事项" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="description" content="一个适合手机端使用的极简待办事项网页，支持分类、优先级、截止日期、搜索、编辑和本地存储。" />
   <title>待办事项</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23ff8fab'/%3E%3Cstop offset='100%25' stop-color='%23ffd6e7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Cpath d='M20 32.5l8 8 16-18' fill='none' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <style>
     :root {
       --bg-start: #ffd6e7;
@@ -25,6 +32,8 @@
       --accent: #ff8fab;
       --accent-dark: #ef6f97;
       --danger: #c06482;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
     }
 
     * {
@@ -32,6 +41,11 @@
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -40,7 +54,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 28px 16px;
+      padding: calc(28px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
       color: var(--text-main);
     }
 
@@ -71,6 +85,11 @@
       flex-wrap: wrap;
     }
 
+    .hero-left {
+      flex: 1;
+      min-width: 0;
+    }
+
     .hero-left h1 {
       font-size: 34px;
       margin-bottom: 8px;
@@ -88,6 +107,7 @@
       gap: 12px;
       align-items: center;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .ghost-card,
@@ -113,6 +133,7 @@
     input,
     select,
     textarea {
+      width: 100%;
       background: rgba(255,255,255,0.94);
       color: var(--text-main);
       padding: 14px 16px;
@@ -120,10 +141,27 @@
     }
 
     textarea {
-      width: 100%;
       min-height: 96px;
       resize: vertical;
       line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      box-shadow: 0 0 0 3px rgba(255, 143, 171, 0.26);
     }
 
     .panel {
@@ -132,6 +170,15 @@
       border-radius: 24px;
       padding: 18px;
       margin-bottom: 18px;
+    }
+
+    .panel-header {
+      display: none;
+      margin-bottom: 12px;
+      color: var(--text-sub);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .composer {
@@ -153,7 +200,6 @@
     }
 
     .search-wrap input {
-      width: 100%;
       padding-left: 42px;
     }
 
@@ -172,18 +218,55 @@
     .delete-btn,
     .edit-btn,
     .save-btn,
-    .cancel-btn {
+    .cancel-btn,
+    .quick-btn,
+    .install-btn {
       cursor: pointer;
+      min-height: 48px;
     }
 
     .add-btn,
-    .save-btn {
+    .save-btn,
+    .install-btn {
       background: linear-gradient(135deg, var(--accent), #ffb3c6);
       color: white;
       padding: 14px 18px;
       min-width: 116px;
       font-weight: 600;
       box-shadow: 0 14px 28px rgba(255, 143, 171, 0.28);
+    }
+
+    .install-btn[hidden] {
+      display: none;
+    }
+
+    .helper-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-btn {
+      background: rgba(255,255,255,0.72);
+      color: var(--text-main);
+      padding: 12px 14px;
+    }
+
+    .tips-card {
+      background: rgba(255,255,255,0.62);
+      color: var(--text-sub);
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .filters {
@@ -222,6 +305,7 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
+      padding-bottom: 86px;
     }
 
     .empty {
@@ -270,7 +354,7 @@
     .item.low::before { background: linear-gradient(90deg, #77c9a5, #9ee0c2); }
 
     .item.completed {
-      opacity: 0.78;
+      opacity: 0.8;
     }
 
     .item.editing {
@@ -290,14 +374,16 @@
       gap: 12px;
       align-items: flex-start;
       flex: 1;
+      min-width: 0;
     }
 
     .check {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       margin-top: 2px;
       cursor: pointer;
       accent-color: var(--accent-dark);
+      flex-shrink: 0;
     }
 
     .task-text {
@@ -320,7 +406,8 @@
     }
 
     .priority-badge,
-    .category-badge {
+    .category-badge,
+    .mobile-due {
       font-size: 12px;
       color: white;
       padding: 7px 10px;
@@ -335,6 +422,11 @@
     .category-badge.work { background: var(--work); }
     .category-badge.family { background: var(--family); }
     .category-badge.self { background: var(--self); }
+
+    .mobile-due {
+      display: none;
+      background: rgba(255, 143, 171, 0.84);
+    }
 
     .item-meta {
       display: grid;
@@ -405,14 +497,33 @@
       gap: 12px;
     }
 
+    .fab {
+      position: fixed;
+      right: 18px;
+      bottom: calc(18px + var(--safe-bottom));
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent), #ffb3c6);
+      color: #fff;
+      box-shadow: 0 18px 32px rgba(255, 143, 171, 0.35);
+      font-size: 28px;
+      z-index: 30;
+    }
+
     @media (max-width: 920px) {
       .composer,
       .toolbar,
-      .edit-grid {
+      .edit-grid,
+      .helper-grid {
         grid-template-columns: 1fr;
       }
 
-      .filters {
+      .filters,
+      .hero-right {
         justify-content: flex-start;
       }
 
@@ -422,16 +533,106 @@
     }
 
     @media (max-width: 560px) {
+      body {
+        display: block;
+        padding: 0;
+      }
+
+      .shell {
+        max-width: none;
+        min-height: 100vh;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
       .app {
-        padding: 22px;
+        min-height: 100vh;
+        border-radius: 0;
+        padding: calc(18px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+        background: rgba(255, 250, 253, 0.55);
+      }
+
+      .hero {
+        margin-bottom: 16px;
+        gap: 14px;
       }
 
       .hero-left h1 {
         font-size: 28px;
       }
 
+      .hero-left p {
+        font-size: 13px;
+      }
+
+      .hero-right {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+      }
+
+      .panel {
+        border-radius: 22px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+
+      .panel-header {
+        display: block;
+      }
+
+      .composer {
+        gap: 10px;
+      }
+
+      .toolbar {
+        gap: 10px;
+      }
+
+      .search-wrap input,
+      .lang-switch,
+      input,
+      select,
+      button,
+      textarea {
+        font-size: 16px;
+      }
+
+      .add-btn,
+      .save-btn,
+      .delete-btn,
+      .edit-btn,
+      .cancel-btn,
+      .quick-btn,
+      .install-btn,
+      .filter-btn {
+        width: 100%;
+      }
+
+      .filters {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .stats,
+      .quick-actions {
+        width: 100%;
+      }
+
+      .chip {
+        flex: 1;
+        text-align: center;
+      }
+
       .item {
         min-height: auto;
+        border-radius: 22px;
+        padding: 16px;
+      }
+
+      .item:hover {
+        transform: none;
       }
 
       .item-top,
@@ -441,8 +642,25 @@
       }
 
       .badge-group,
-      .action-group {
+      .action-group,
+      .meta-row {
         justify-content: flex-start;
+      }
+
+      .task-text {
+        font-size: 16px;
+      }
+
+      .mobile-due {
+        display: inline-flex;
+      }
+
+      .meta-row .meta-tag:first-child {
+        display: none;
+      }
+
+      .fab {
+        display: inline-flex;
       }
     }
   </style>
@@ -464,7 +682,13 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="helper-grid">
+        <div class="tips-card" id="mobileHint"></div>
+        <button class="install-btn" id="installButton" hidden></button>
+      </div>
+
+      <div class="panel" id="composerPanel">
+        <div class="panel-header" id="createPanelTitle"></div>
         <div class="composer">
           <input id="taskInput" type="text" />
           <select id="prioritySelect"></select>
@@ -475,6 +699,7 @@
       </div>
 
       <div class="panel">
+        <div class="panel-header" id="toolsPanelTitle"></div>
         <div class="toolbar">
           <div class="search-wrap">
             <span class="search-icon">⌕</span>
@@ -490,20 +715,25 @@
         </div>
       </div>
 
+      <div class="quick-actions" id="quickActions"></div>
+
       <div class="list" id="todoList"></div>
     </div>
   </div>
 
+  <button class="fab" id="scrollToComposer" aria-label="quick add">＋</button>
+
   <script>
-    const STORAGE_KEY = 'minimal_todo_pink_v4';
+    const STORAGE_KEY = 'minimal_todo_pink_v5';
+    const LEGACY_STORAGE_KEY = 'minimal_todo_pink_v4';
     const LANGUAGE_KEY = 'minimal_todo_language';
 
     const i18n = {
       zh: {
         title: '待办事项',
-        subtitle: '用更轻盈的方式，安排今天的重要任务',
+        subtitle: '更适合手机使用的轻盈任务清单',
         placeholder: '输入一条新的待办事项...',
-        searchPlaceholder: '搜索事项...',
+        searchPlaceholder: '搜索事项、分类...',
         add: '添加',
         dueDate: '截止日期',
         dueNone: '未设置截止日期',
@@ -514,6 +744,15 @@
         save: '保存',
         cancel: '取消',
         today: '今天',
+        createPanelTitle: '新建任务',
+        toolsPanelTitle: '筛选和搜索',
+        mobileHint: '适合手机使用：可添加到主屏幕，像应用一样打开。',
+        install: '添加到主屏幕',
+        quickActions: {
+          today: '今天到期',
+          work: '工作任务',
+          high: '高优先级'
+        },
         priorities: {
           high: '高',
           medium: '中',
@@ -545,13 +784,17 @@
           completed: '已完成'
         },
         validation: '请输入待办内容',
-        editValidation: '编辑内容不能为空'
+        editValidation: '编辑内容不能为空',
+        addSuccess: '已添加',
+        dueToday: '今天到期',
+        composeAria: '跳转到新建任务区',
+        installTipFallback: '在手机浏览器中可通过“分享-添加到主屏幕”固定到桌面。'
       },
       en: {
         title: 'Todo List',
-        subtitle: 'A soft and minimal space for what matters today',
+        subtitle: 'A softer task list designed for mobile use',
         placeholder: 'Add a new todo item...',
-        searchPlaceholder: 'Search tasks...',
+        searchPlaceholder: 'Search tasks or category...',
         add: 'Add',
         dueDate: 'Due Date',
         dueNone: 'No due date',
@@ -562,6 +805,15 @@
         save: 'Save',
         cancel: 'Cancel',
         today: 'Today',
+        createPanelTitle: 'Create Task',
+        toolsPanelTitle: 'Search and Filter',
+        mobileHint: 'Works better on phones and can be added to home screen like an app.',
+        install: 'Add to Home Screen',
+        quickActions: {
+          today: 'Due Today',
+          work: 'Work',
+          high: 'High Priority'
+        },
         priorities: {
           high: 'High',
           medium: 'Medium',
@@ -593,7 +845,11 @@
           completed: 'Completed'
         },
         validation: 'Please enter a task',
-        editValidation: 'Task content cannot be empty'
+        editValidation: 'Task content cannot be empty',
+        addSuccess: 'Added',
+        dueToday: 'Due Today',
+        composeAria: 'Jump to create task section',
+        installTipFallback: 'On mobile browsers, use Share → Add to Home Screen to pin it like an app.'
       }
     };
 
@@ -603,6 +859,7 @@
     let searchKeyword = '';
     let currentSort = 'dueAsc';
     let editingId = null;
+    let deferredPrompt = null;
 
     const title = document.getElementById('title');
     const subtitle = document.getElementById('subtitle');
@@ -618,10 +875,20 @@
     const stats = document.getElementById('stats');
     const languageSelect = document.getElementById('languageSelect');
     const filterButtons = document.querySelectorAll('.filter-btn');
+    const mobileHint = document.getElementById('mobileHint');
+    const installButton = document.getElementById('installButton');
+    const quickActions = document.getElementById('quickActions');
+    const createPanelTitle = document.getElementById('createPanelTitle');
+    const toolsPanelTitle = document.getElementById('toolsPanelTitle');
+    const composerPanel = document.getElementById('composerPanel');
+    const scrollToComposerButton = document.getElementById('scrollToComposer');
 
     function loadTodos() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (Array.isArray(current)) return current;
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
+        return Array.isArray(legacy) ? legacy : [];
       } catch {
         return [];
       }
@@ -676,6 +943,15 @@
       return new Date(value).getTime();
     }
 
+    function isToday(value) {
+      if (!value) return false;
+      const today = new Date();
+      const target = new Date(value);
+      return today.getFullYear() === target.getFullYear()
+        && today.getMonth() === target.getMonth()
+        && today.getDate() === target.getDate();
+    }
+
     function sortTodos(list) {
       return [...list].sort((a, b) => {
         if (currentSort === 'dueDesc') {
@@ -687,9 +963,35 @@
       });
     }
 
+    function renderQuickActions() {
+      const t = i18n[currentLanguage];
+      quickActions.innerHTML = `
+        <button class="quick-btn" data-quick="today">${t.quickActions.today}</button>
+        <button class="quick-btn" data-quick="work">${t.quickActions.work}</button>
+        <button class="quick-btn" data-quick="high">${t.quickActions.high}</button>
+      `;
+
+      quickActions.querySelectorAll('[data-quick]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const type = button.dataset.quick;
+          if (type === 'today') {
+            dueDateInput.value = new Date().toISOString().slice(0, 10);
+          }
+          if (type === 'work') {
+            categorySelect.value = 'work';
+          }
+          if (type === 'high') {
+            prioritySelect.value = 'high';
+          }
+          taskInput.focus();
+        });
+      });
+    }
+
     function applyLanguage() {
       const t = i18n[currentLanguage];
       document.documentElement.lang = currentLanguage === 'zh' ? 'zh-CN' : 'en';
+      document.title = t.title;
       title.textContent = t.title;
       subtitle.textContent = t.subtitle;
       todayBadge.textContent = formatToday();
@@ -698,6 +1000,11 @@
       addButton.textContent = t.add;
       dueDateInput.setAttribute('aria-label', t.dueDate);
       languageSelect.value = currentLanguage;
+      mobileHint.textContent = deferredPrompt ? t.mobileHint : `${t.mobileHint} ${t.installTipFallback}`;
+      installButton.textContent = t.install;
+      createPanelTitle.textContent = t.createPanelTitle;
+      toolsPanelTitle.textContent = t.toolsPanelTitle;
+      scrollToComposerButton.setAttribute('aria-label', t.composeAria);
 
       prioritySelect.innerHTML = `
         <option value="high">${t.priorities.high}</option>
@@ -723,6 +1030,7 @@
         button.textContent = t.filters[filter];
       });
 
+      renderQuickActions();
       renderStats();
       renderTodos();
     }
@@ -749,7 +1057,8 @@
 
         const matchSearch = !keyword
           || item.text.toLowerCase().includes(keyword)
-          || translateCategory(item.category).toLowerCase().includes(keyword);
+          || translateCategory(item.category).toLowerCase().includes(keyword)
+          || translatePriority(item.priority).toLowerCase().includes(keyword);
         return matchFilter && matchSearch;
       });
 
@@ -760,6 +1069,12 @@
       const t = i18n[currentLanguage];
       if (!item.dueDate) return `<span class="meta-tag">${t.dueNone}</span>`;
       return `<span class="meta-tag">${t.duePrefix}:${formatDate(item.dueDate)}</span>`;
+    }
+
+    function mobileDueTag(item) {
+      const t = i18n[currentLanguage];
+      if (!item.dueDate) return '';
+      return `<span class="mobile-due">${isToday(item.dueDate) ? t.dueToday : `${t.duePrefix}:${formatDate(item.dueDate)}`}</span>`;
     }
 
     function editCard(item) {
@@ -803,6 +1118,7 @@
               <div class="task-text">${escapeHTML(item.text)}</div>
             </div>
             <div class="badge-group">
+              ${mobileDueTag(item)}
               <span class="category-badge ${item.category}">${translateCategory(item.category)}</span>
               <span class="priority-badge ${item.priority}">${translatePriority(item.priority)}</span>
             </div>
@@ -916,9 +1232,17 @@
       renderTodos();
     }
 
+    function scrollToComposer() {
+      composerPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => taskInput.focus(), 240);
+    }
+
     addButton.addEventListener('click', addTodo);
     taskInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') addTodo();
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addTodo();
+      }
     });
 
     searchInput.addEventListener('input', (event) => {
@@ -944,6 +1268,29 @@
         button.classList.add('active');
         renderTodos();
       });
+    });
+
+    scrollToComposerButton.addEventListener('click', scrollToComposer);
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      installButton.hidden = false;
+      mobileHint.textContent = i18n[currentLanguage].mobileHint;
+    });
+
+    installButton.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installButton.hidden = true;
+      mobileHint.textContent = i18n[currentLanguage].installTipFallback;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      installButton.hidden = true;
     });
 
     window.toggleTodo = toggleTodo;
