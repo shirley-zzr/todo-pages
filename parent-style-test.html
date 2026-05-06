@@ -1488,7 +1488,12 @@
     }
 
     function renderQuestion() {
-      const index = state.currentQuestion;
+      const maxIndex = questions.length - 1;
+      const index = Math.min(Math.max(Number(state.currentQuestion) || 0, 0), maxIndex);
+      if (state.currentQuestion !== index) {
+        state.currentQuestion = index;
+        saveState();
+      }
       const question = questions[index];
       progressText.textContent = '第' + (index + 1) + '题/共' + questions.length + '题';
       progressInner.style.width = ((index + 1) / questions.length) * 100 + '%';
