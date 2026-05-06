@@ -1417,7 +1417,6 @@
     const shareBtn = document.getElementById('share-btn');
     const copyLinkBtn = document.getElementById('copy-link-btn');
     const wechatBtn = document.getElementById('wechat-btn');
-    const previewAllBtn = document.getElementById('preview-all-btn');
     const previewSwitch = document.getElementById('preview-switch');
     const toast = document.getElementById('toast');
     const animalFace = document.getElementById('animal-face');
@@ -2401,20 +2400,6 @@
       saveState();
       showScreen('question');
       renderQuestion();
-    });
-
-    previewAllBtn.addEventListener('click', function() {
-      if (!state.gender) {
-        state.gender = 'neutral';
-      }
-      if (!state.age) {
-        state.age = 'not-parent';
-      }
-      state.result = { primary: 'elephant', secondary: 'dolphin' };
-      saveState();
-      renderResult();
-      showScreen('result');
-      showToast('已进入6种动物预览模式');
     });
 
     prevBtn.addEventListener('click', function() {
